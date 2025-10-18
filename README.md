@@ -2,7 +2,7 @@
 
 A simple admin dashboard template built with React, TypeScript, Vite, and Shadcn/UI components. Features a clean design with custom file-based routing system for scalable application development.
 
-![Dashboard Preview](./public/Capture.PNG)
+![Dashboard Preview](./public/lmao.png)
 
 ## Features
 
