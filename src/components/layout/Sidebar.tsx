@@ -12,6 +12,7 @@ import {
 import { menuItems } from "@/config/menu"
 import { LucideLayoutDashboard, ChevronRight } from "lucide-react"
 import { useState } from "react"
+import { APP_NAME } from "@/utils/constant"
 
 export function AdminSidebar() {
   const location = useLocation()
@@ -34,7 +35,7 @@ export function AdminSidebar() {
             <LucideLayoutDashboard className="w-4 h-4" />
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-sm">Admin Dashboard</span>
+            <span className="font-semibold text-sm">{APP_NAME}</span>
           </div>
         </div>
       </SidebarHeader>
