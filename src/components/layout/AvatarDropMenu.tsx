@@ -9,12 +9,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth";
+import { toast } from "sonner";
 
 const AvatarDropMenu = () => {
     const navigate = useNavigate();
     const handleLogout = () => {
       useAuthStore.getState().logout();
       navigate("/login");
+      toast.success("Đăng xuất thành công");
     };
     const { user } = useAuthStore();
   return (

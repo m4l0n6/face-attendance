@@ -14,7 +14,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="app-theme">
       <AdminRoutes />
-      <Toaster />
+      <Toaster position="top-center" richColors closeButton/>
     </ThemeProvider>
   )
 }
