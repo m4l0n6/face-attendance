@@ -1,4 +1,4 @@
-// <reference types="vite/client" />
+/// <reference types="vite/client" />
 
 interface ImportMetaEnv {
   readonly VITE_APP_NAME: string
@@ -7,4 +7,25 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv
+}
+
+// Declare CSS modules
+declare module '*.css' {
+  const content: Record<string, string>;
+  export default content;
+}
+
+declare module '*.scss' {
+  const content: Record<string, string>;
+  export default content;
+}
+
+declare module '*.sass' {
+  const content: Record<string, string>;
+  export default content;
+}
+
+declare module '*.less' {
+  const content: Record<string, string>;
+  export default content;
 }
