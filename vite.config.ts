@@ -11,4 +11,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['onnxruntime-web'],
+    esbuildOptions: {
+      target: 'esnext',
+    }
+  },
+  build: {
+    target: 'esnext',
+  },
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+    fs: {
+      strict: false
+    }
+  }
 })
