@@ -13,7 +13,7 @@ import { LucideLayoutDashboard, ChevronRight } from "lucide-react"
 import { useState } from "react"
 import { APP_NAME } from "@/utils/constant"
 
-export function AdminSidebar() {
+export function LayoutSidebar() {
   const location = useLocation()
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 

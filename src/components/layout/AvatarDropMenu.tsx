@@ -9,14 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth";
-import { toast } from "sonner";
 
 const AvatarDropMenu = () => {
     const navigate = useNavigate();
     const handleLogout = () => {
       useAuthStore.getState().logout();
       navigate("/login");
-      toast.success("Đăng xuất thành công");
     };
     const { user } = useAuthStore();
   return (
@@ -25,7 +23,7 @@ const AvatarDropMenu = () => {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="border-none h-full">
             <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarImage src="/avatar.png" alt="@shadcn" />
             </Avatar>
             <p className="hidden md:block">{user?.displayName}</p>
           </Button>

@@ -45,11 +45,11 @@ export const useAuthStore = create<AuthState>()(
                         isLoading: false,
                     });
                     localStorage.setItem('auth_token', response.token);
-                    toast.success('Login successful!');
+                    toast.success('Đăng nhập thành công!');
                     return true;
                 } catch (error) {
                     set({ isLoading: false });
-                    const errorMessage = error instanceof Error ? error.message : 'Login failed';
+                    const errorMessage = error instanceof Error ? error.message : 'Đăng nhập thất bại';
                     toast.error(errorMessage);
                     return false;
                 }
@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthState>()(
                     token: null, 
                     user: null 
                 });
-                toast.success('Logged out successfully!');
+                toast.success('Đăng xuất thành công!');
             },
             isRoleValid: () => {
                 const { user, expectedRole } = get();

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { AdminLayout } from "@/components/layout/AdminLayout"
+import { AdminLayout } from "@/components/layout/DashboardLayout"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { generateRoutes } from "@/utils/routeGenerator"
 import { menuItems } from "@/config/menu"
