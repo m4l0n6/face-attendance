@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { AdminLayout } from "@/components/layout/AdminLayout"
-// import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { generateRoutes } from "@/utils/routeGenerator"
 import { menuItems } from "@/config/menu"
 import LoginPage from "@/pages/auth/login"
@@ -14,9 +14,9 @@ export function AdminRoutes() {
       <Routes>
         <Route path="login" element={<LoginPage />} />
         <Route path="/" element={
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <AdminLayout />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         }>
           <Route index element={<Navigate to="/dashboard" replace />} />
           {autoRoutes}
