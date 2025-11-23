@@ -2,24 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getAllClasses } from "../services/api";
 import { useAuthStore } from "./auth";
-
-interface Class {
-    id: string;
-    name: string;
-    code: string;
-    description: string;
-    lecturerId: string;
-    _count: ClassCount;
-    createdAt: string;
-}
-
-type ClassCount = {
-    students: number;
-    sessions: number;
-}
+import type { Classes } from "@/services/classes/typing";
 
 interface ClassState {
-    classes: Class[];
+    classes: Classes[];
     isLoading: boolean;
     error: string | null;
     fetchClasses: () => Promise<void>;
