@@ -126,11 +126,12 @@ const DashboardPage = () => {
     <div className="space-y-6">
       {/* Welcome */}
       <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3">
-        <Card className="@container/card relative md:col-span-2 bg-linear-[135deg] from-primary/40 to-white overflow-hidden">
-          <CardHeader className="z-10 relative">
+        <Card className="@container/card relative md:col-span-2 overflow-hidden">
+          <CardHeader>
             <CardTitle className="md:mt-5 md:ml-5 font-semibold tabular-nums text-gray-800 text-2xl @[250px]/card:text-3xl">
               Xin chào, {user?.displayName}
             </CardTitle>
+            <img src="graduation.avif" alt="Graduation" className="hidden md:block right-0 bottom-0 absolute md:w-40 md:h-40 object-cover" />
           </CardHeader>
         </Card>
         <Card className="@container/card">
@@ -158,7 +159,7 @@ const DashboardPage = () => {
           </CardFooter>
         </Card>
       </div>
-
+              
       {/* Classes Carousel */}
       <Carousel
         setApi={setApi}

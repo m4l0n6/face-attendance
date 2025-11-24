@@ -60,8 +60,8 @@ export function Load() {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="text-center">
-        <RingSpinner size={64} />
-        <p className="mt-4 text-muted-foreground text-sm">Đang tải...</p>
+        <RingSpinner size={120} />
+        <p className="mt-4 text-muted-foreground text-xl">Đang tải...</p>
       </div>
     </div>
   );
