@@ -272,7 +272,7 @@ const DashboardPage = () => {
               mode="single"
               selected={date}
               onSelect={setDate}
-              className="border rounded-lg [--cell-size:--spacing(10)] md:[--cell-size:--spacing(11)]"
+              className="border rounded-lg [--cell-size:--spacing(8)] md:[--cell-size:--spacing(9)]"
             />
           </CardContent>
           <CardFooter className="flex-col gap-2">
