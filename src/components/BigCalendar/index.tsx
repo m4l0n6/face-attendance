@@ -140,24 +140,36 @@ const BigCalendarComponent = ({ events = [] }: BigCalendarComponentProps) => {
 
   return (
     <>
-      <div className="bg-background p-6 w-full h-screen">
+      <div className="bg-background w-full h-screen">
         <Calendar
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
           style={{ height: "calc(100vh - 48px)" }}
-          view={view}
           date={date}
           onNavigate={(newDate) => setDate(newDate)}
+          view={view}
           onView={(v: View) => setView(v)}
           onSelectEvent={handleSelectEvent}
           culture="vi-VN"
           formats={{
-            monthHeaderFormat: (date: Date) => format(date, "MMMM yyyy", { locale: vi }),
-            dayHeaderFormat: (date: Date) => format(date, "EEEE, dd/MM/yyyy", { locale: vi }),
-            dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
-              `${format(start, "dd/MM", { locale: vi })} - ${format(end, "dd/MM/yyyy", { locale: vi })}`,
+            monthHeaderFormat: (date: Date) =>
+              format(date, "MMMM yyyy", { locale: vi }),
+            dayHeaderFormat: (date: Date) =>
+              format(date, "EEEE, dd/MM/yyyy", { locale: vi }),
+            dayRangeHeaderFormat: ({
+              start,
+              end,
+            }: {
+              start: Date;
+              end: Date;
+            }) =>
+              `${format(start, "dd/MM", { locale: vi })} - ${format(
+                end,
+                "dd/MM/yyyy",
+                { locale: vi }
+              )}`,
           }}
           components={{
             toolbar: CustomToolbar,
@@ -188,9 +200,7 @@ const BigCalendarComponent = ({ events = [] }: BigCalendarComponentProps) => {
               <CalendarIcon className="w-5 h-5" />
               {selectedEvent?.title}
             </DialogTitle>
-            <DialogDescription>
-              Chi tiết sự kiện
-            </DialogDescription>
+            <DialogDescription>Chi tiết sự kiện</DialogDescription>
           </DialogHeader>
           {selectedEvent && (
             <div className="space-y-4 py-4">
@@ -199,10 +209,13 @@ const BigCalendarComponent = ({ events = [] }: BigCalendarComponentProps) => {
                 <div className="flex-1">
                   <p className="mb-1 font-medium text-sm">Thời gian</p>
                   <p className="text-muted-foreground text-sm">
-                    {format(selectedEvent.start, "EEEE, dd/MM/yyyy", { locale: vi })}
+                    {format(selectedEvent.start, "EEEE, dd/MM/yyyy", {
+                      locale: vi,
+                    })}
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    {format(selectedEvent.start, "HH:mm", { locale: vi })} - {format(selectedEvent.end, "HH:mm", { locale: vi })}
+                    {format(selectedEvent.start, "HH:mm", { locale: vi })} -{" "}
+                    {format(selectedEvent.end, "HH:mm", { locale: vi })}
                   </p>
                 </div>
               </div>

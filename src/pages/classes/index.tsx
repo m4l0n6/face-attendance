@@ -8,6 +8,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useClassStore } from "@/stores/classes";
 import { Classes } from "@/services/classes/typing";
 import { useEffect } from "react";
+import { Load } from "@/components/load";
 
 const ClassesPage = () => {
   const classData = useClassStore((state) => state.classes);
@@ -37,7 +38,7 @@ const ClassesPage = () => {
   if (isLoading && classData.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-muted-foreground">Đang tải dữ liệu...</div>
+        <Load />
       </div>
     );
   }
