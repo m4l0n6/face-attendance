@@ -222,41 +222,58 @@ const DashboardPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex-col space-y-4">
-              <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-blue-100 dark:to-blue-900 p-4 rounded-lg">
-                <div className="flex justify-center items-center bg-primary mx-auto mb-3 rounded-full w-12 h-12 font-bold text-white text-2xl">
-                  1
+            <div className="space-y-6">
+              {/* Step 1 */}
+              <div className="flex gap-4">
+                <div className="relative flex flex-col items-center">
+                  <div className="flex justify-center items-center bg-primary rounded-full w-10 h-10 font-bold text-white shrink-0">
+                    1
+                  </div>
+                  <div className="flex-1 mt-2 border-border border-l-2 w-0 h-full" />
                 </div>
-                <h4 className="mb-2 font-semibold text-sm text-center">
-                  Điểm danh khuôn mặt
-                </h4>
-                <p className="text-muted-foreground text-xs text-center leading-relaxed">
-                  Sử dụng công nghệ nhận diện khuôn mặt để điểm danh nhanh chóng
-                  và chính xác
-                </p>
+                <div className="flex-1 pb-6">
+                  <h4 className="mb-1 font-semibold text-foreground text-lg">
+                    Điểm danh khuôn mặt
+                  </h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Sử dụng công nghệ nhận diện khuôn mặt để điểm danh nhanh chóng và chính xác
+                  </p>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-blue-100 dark:to-blue-900 p-4 rounded-lg">
-                <div className="flex justify-center items-center bg-primary mx-auto mb-3 rounded-full w-12 h-12 font-bold text-white text-2xl">
-                  2
+
+              {/* Step 2 */}
+              <div className="flex gap-4">
+                <div className="relative flex flex-col items-center">
+                  <div className="flex justify-center items-center bg-muted border-2 border-border rounded-full w-10 h-10 font-semibold text-muted-foreground shrink-0">
+                    2
+                  </div>
+                  <div className="flex-1 mt-2 border-border border-l-2 w-0 h-full" />
                 </div>
-                <h4 className="mb-2 font-semibold text-sm text-center">
-                  Quản lý lớp học
-                </h4>
-                <p className="text-muted-foreground text-xs text-center leading-relaxed">
-                  Theo dõi lịch học, bài tập và thông tin lớp học một cách dễ
-                  dàng
-                </p>
+                <div className="flex-1 pb-6">
+                  <h4 className="mb-1 font-semibold text-muted-foreground text-lg">
+                    Quản lý lớp học
+                  </h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Theo dõi lịch học, bài tập và thông tin lớp học một cách dễ dàng
+                  </p>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 dark:from-blue-950 to-blue-100 dark:to-blue-900 p-4 rounded-lg">
-                <div className="flex justify-center items-center bg-primary mx-auto mb-3 rounded-full w-12 h-12 font-bold text-white text-2xl">
-                  3
+
+              {/* Step 3 */}
+              <div className="flex gap-4">
+                <div className="relative flex flex-col items-center">
+                  <div className="flex justify-center items-center bg-muted border-2 border-border rounded-full w-10 h-10 font-semibold text-muted-foreground shrink-0">
+                    3
+                  </div>
                 </div>
-                <h4 className="mb-2 font-semibold text-sm text-center">
-                  Nhận thông báo
-                </h4>
-                <p className="text-muted-foreground text-xs text-center leading-relaxed">
-                  Nhận thông báo thời gian thực từ giảng viên và nhà trường
-                </p>
+                <div className="flex-1">
+                  <h4 className="mb-1 font-semibold text-muted-foreground text-lg">
+                    Nhận thông báo
+                  </h4>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Nhận thông báo thời gian thực từ giảng viên và nhà trường
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>
