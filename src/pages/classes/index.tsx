@@ -1,5 +1,6 @@
 import { DataTable } from "@/components/common/DataTable";
 import {
+  createIndexColumn,
   createSortableColumn,
   createDateColumn,
   createActionsColumn,
@@ -9,18 +10,21 @@ import { useClassStore } from "@/stores/classes";
 import { Classes } from "@/services/classes/typing";
 import { useEffect } from "react";
 import { Load } from "@/components/load";
+import { useNavigate } from "react-router-dom";
 
 const ClassesPage = () => {
   const classData = useClassStore((state) => state.classes);
   const fetchClasses = useClassStore((state) => state.fetchClasses);
   const isLoading = useClassStore((state) => state.isLoading);
   const error = useClassStore((state) => state.error);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchClasses();
   }, [fetchClasses]);
 
   const columns: ColumnDef<Classes>[] = [
+    createIndexColumn(),
     createSortableColumn("code", "Mã lớp"),
     createSortableColumn("name", "Tên lớp"),
     {
@@ -30,7 +34,7 @@ const ClassesPage = () => {
     createDateColumn("createdAt", "Ngày tạo"),
     createActionsColumn({
       onView: (classItem) => {
-        console.log("View class:", classItem);
+        navigate(`/classes/${classItem.id}`);
       }
     })
   ];

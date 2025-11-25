@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { vi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock  } from "lucide-react";
 import {
   Dialog,
@@ -37,58 +38,60 @@ const CustomToolbar = ({ label, onNavigate, onView, view }: CustomToolbarProps) 
   return (
     <div className="flex justify-between items-center mb-4 pb-4 border-b">
       <div className="flex items-center gap-2">
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            onNavigate("PREV");
-          }}
-          type="button"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            onNavigate("TODAY");
-          }}
-          variant="outline"
-          type="button"
-        >
-          Hôm nay
-        </Button>
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            onNavigate("NEXT");
-          }}
-          type="button"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </Button>
+        <ButtonGroup>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate("PREV");
+            }}
+            variant="outline"
+            type="button"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate("TODAY");
+            }}
+            variant="outline"
+            type="button"
+          >
+            Hôm nay
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate("NEXT");
+            }}
+            variant="outline"
+            type="button"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </ButtonGroup>
       </div>
 
       <h2 className="font-semibold text-xl">{label}</h2>
 
       <div className="flex gap-1">
-        {(["month", "week", "day"] as View[]).map((v) => (
-          <button
-            key={v}
-            onClick={() => onView(v)}
-            className={`inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 ${
-              view === v
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            }`}
-          >
-            {v === "month"
-              ? "Tháng"
-              : v === "week"
-              ? "Tuần"
-              : v === "day"
-              ? "Ngày"
-              : "Danh sách"}
-          </button>
-        ))}
+        <ButtonGroup>
+          {(["month", "week", "day"] as View[]).map((v) => (
+            <Button
+              key={v}
+              onClick={() => onView(v)}
+              variant={view === v ? "default" : "outline"}
+            >
+              {v === "month"
+                ? "Tháng"
+                : v === "week"
+                ? "Tuần"
+                : v === "day"
+                ? "Ngày"
+                : "Danh sách"}
+            </Button>
+          ))}
+        </ButtonGroup>
       </div>
     </div>
   );

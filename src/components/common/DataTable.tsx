@@ -28,7 +28,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Search, Settings2 } from "lucide-react";
+import {
+  ChevronDown,
+  Search,
+  Settings2,
+  RefreshCw,
+  PlusCircle,
+} from "lucide-react";
 import EmptyData from "../empty";
 
 interface DataTableProps<TData, TValue> {
@@ -43,6 +49,8 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean;
   onCreateClick?: () => void;
   showCreateButton?: boolean;
+  onRefresh?: () => void;
+  showRefreshButton?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -56,6 +64,8 @@ export function DataTable<TData, TValue>({
   pageSize = 10,
   onCreateClick,
   showCreateButton = true,
+  onRefresh,
+  showRefreshButton = true,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -110,7 +120,16 @@ export function DataTable<TData, TValue>({
             </div>
           )}
           {showCreateButton && onCreateClick && (
-            <Button onClick={onCreateClick}>Thêm mới</Button>
+            <Button onClick={onCreateClick}>
+              <PlusCircle color="#fff" />
+              Thêm mới
+            </Button>
+          )}
+          {showRefreshButton && onRefresh && (
+            <Button variant="outline" onClick={onRefresh}>
+              <RefreshCw className="w-4 h-4" />
+              Làm mới
+            </Button>
           )}
         </div>
 
