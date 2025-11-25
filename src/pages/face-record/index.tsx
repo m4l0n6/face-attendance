@@ -3,7 +3,6 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import {
   loadFaceApiModels,
@@ -13,11 +12,11 @@ import {
   compareFaces,
 } from "@/utils/faceDetection";
 import {
-  saveFaceDescriptor,
   getAllFaceDescriptors,
   getFaceCount,
 } from "@/utils/faceStorage";
-import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/stores/auth";
+import { faceUpload } from "@/services/api";
 
 const FaceRecordPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -27,10 +26,9 @@ const FaceRecordPage: React.FC = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [capturedDescriptor, setCapturedDescriptor] = useState<Float32Array | null>(null);
   const [currentEmbeddings, setCurrentEmbeddings] = useState<Float32Array[]>([]);
-  const [error, setError] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
   const [savedFacesCount, setSavedFacesCount] = useState<number>(0);
   const [mode, setMode] = useState<"register" | "attendance">("register");
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const initModels = async () => {
@@ -39,7 +37,7 @@ const FaceRecordPage: React.FC = () => {
         setIsModelLoaded(true);
         setSavedFacesCount(getFaceCount());
       } catch (err) {
-        setError("Không thể tải models. Vui lòng tải models vào thư mục /public/models");
+        toast.error("Không thể tải models. Vui lòng tải models vào thư mục /public/models");
         console.error(err);
       }
     };
@@ -52,11 +50,10 @@ const FaceRecordPage: React.FC = () => {
 
   const startDetection = () => {
     if (!isModelLoaded) {
-      setError("Models chưa được tải!");
+      toast.error("Models chưa được tải!");
       return;
     }
     setIsDetecting(true);
-    setError("");
   };
 
   const stopDetection = () => {
@@ -65,29 +62,36 @@ const FaceRecordPage: React.FC = () => {
 
   const switchMode = (newMode: "register" | "attendance") => {
     setMode(newMode);
-    setError("");
     setCapturedDescriptor(null);
   };
 
   const captureFace = async () => {
     if (!videoRef.current) return;
 
-    if (mode === "register" && !userName.trim()) {
-      toast.error("Vui lòng nhập tên trước khi ghi nhận khuôn mặt!");
-      return;
-    }
-
     try {
       const descriptor = await captureFaceDescriptor(videoRef.current);
       if (descriptor) {
         if (mode === "register") {
-          // Chế độ đăng ký: Lưu vào localStorage
-          saveFaceDescriptor(userName.trim(), descriptor);
-          setCapturedDescriptor(descriptor);
-          setSavedFacesCount(getFaceCount());
-          setError("");
-          toast.success(`Khuôn mặt của "${userName.trim()}" đã được lưu!`);
-          setUserName("");
+          // Chế độ đăng ký: Gọi API để lưu
+          const studentId = user?.studentInfo[0]?.studentId;
+          if (!studentId) {
+            toast.error("Không tìm thấy thông tin sinh viên!");
+            return;
+          }
+          
+          try {
+            const token = useAuthStore.getState().token;
+            if (!token) {
+              toast.error("Vui lòng đăng nhập lại!");
+              return;
+            }
+            await faceUpload(token, studentId, Array.from(descriptor));
+            setCapturedDescriptor(descriptor);
+            setSavedFacesCount(getFaceCount() + 1);
+            toast.success("Lưu khuôn mặt thành công!");
+          } catch  {
+            toast.error("Không thể lưu khuôn mặt!");
+          }
         } else {
           // Chế độ điểm danh: So sánh với các khuôn mặt đã lưu
           const savedFaces = getAllFaceDescriptors();
@@ -114,16 +118,15 @@ const FaceRecordPage: React.FC = () => {
 
           if (matched) {
             toast.success(`Điểm danh thành công: ${matchedName} (${(bestSimilarity * 100).toFixed(1)}%)`);
-            setError("");
           } else {
             toast.error("Không tìm thấy khuôn mặt khớp trong hệ thống!");
           }
         }
       } else {
-        setError("Không phát hiện khuôn mặt. Vui lòng thử lại!");
+        toast.error("Không phát hiện khuôn mặt. Vui lòng thử lại!");
       }
     } catch (err) {
-      setError("Lỗi khi xử lý khuôn mặt");
+      toast.error("Lỗi khi xử lý khuôn mặt");
       console.error(err);
     }
   };
@@ -190,28 +193,6 @@ const FaceRecordPage: React.FC = () => {
           </Badge>
         </div>
       </Card>
-
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-
-      {mode === "register" && (
-        <Card className="mb-4 sm:mb-6 p-3 sm:p-4">
-          <label className="block mb-2 font-medium text-sm">
-            Nhập tên người dùng:
-          </label>
-          <Input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="Ví dụ: Nguyễn Văn A"
-            className="w-full"
-          />
-        </Card>
-      )}
 
       <Card className="mb-4 sm:mb-6 p-3 sm:p-6">
         <div className="flex justify-center mb-4 overflow-hidden">
