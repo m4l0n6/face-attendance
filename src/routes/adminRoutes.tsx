@@ -6,6 +6,7 @@ import { generateRoutes } from "@/utils/routeGenerator"
 import { menuItems } from "@/config/menu"
 import LoginPage from "@/pages/auth/login"
 import NotFoundPage from "@/pages/exception/404"
+import NotificationPage from "@/pages/notification"
 import { Load } from "@/components/load"
 
 const ClassesDetailPage = React.lazy(
@@ -34,6 +35,7 @@ export function AdminRoutes() {
               </React.Suspense>
             } 
           />
+          <Route path="notifications" element={<NotificationPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

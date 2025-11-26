@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { login, getMe } from '../services/api';
+import { login, getMe } from '@/services/user/index';
 import { toast } from "sonner";
 import type { User } from '@/services/user/typing';
 
