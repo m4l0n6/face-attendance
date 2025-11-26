@@ -15,18 +15,28 @@ import {
   CarouselApi,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, User, MapPin } from "lucide-react";
+import { ArrowRight, User, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
 import { useEffect, useState } from "react";
 import { useClassStore } from "@/stores/classes";
+import { useNotificationStore } from "@/stores/notification";
 import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
   const { user } = useAuthStore();
   const [api, setApi] = useState<CarouselApi>();
   const { classes, fetchClasses } = useClassStore();
+  const token = useAuthStore((state) => state.token);
+  const { notifications, fetchNotifications } =
+     useNotificationStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token) {
+      fetchNotifications(token, false);
+    }
+}, [token, fetchNotifications]);
 
   useEffect(() => {
     fetchClasses();
@@ -58,36 +68,53 @@ const DashboardPage = () => {
     <div className="space-y-6">
       {/* Welcome */}
       <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3">
-        <Card className="@container/card relative md:col-span-2 overflow-hidden">
+        <Card className="@container/card md:col-span-2 max-h-72 overflow-hidden">
           <CardHeader>
             <CardTitle className="md:mt-5 md:ml-5 font-semibold tabular-nums text-gray-800 text-2xl @[250px]/card:text-3xl">
               Xin chào, {user?.displayName}
             </CardTitle>
-            <img
-              src="graduation.avif"
-              alt="Graduation"
-              className="hidden md:block right-0 bottom-0 absolute md:w-40 md:h-40 object-cover"
-            />
+            <div className="hidden md:block relative w-full h-16">
+              <img
+                src="graduation.avif"
+                alt="Graduation"
+                className="hidden md:block -top-16 right-0 absolute md:w-40 md:h-40 object-cover"
+              />
+            </div>
           </CardHeader>
         </Card>
         <Card className="@container/card">
           <CardHeader>
             <CardTitle className="flex justify-between items-center font-semibold tabular-nums @[250px]/card:text-xl text-2xl">
               <div>Lịch học</div>
-              <Button variant="link" className="text-sm" onClick={() => navigate("/schedule")}>
+              <Button
+                variant="link"
+                className="text-sm"
+                onClick={() => navigate("/schedule")}
+              >
                 Xem tất cả <ArrowRight className="w-4 h-4" />
               </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="line-clamp-2">
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Impedit voluptates, quod molestiae repellat cum fuga assumenda consectetur id repellendus. Consequuntur modi iste ad iusto similique deleniti unde ex ab cum!
+            {notifications.length === 0 ? (
+              <div className="h-full text-muted-foreground text-center">
+                Không có lịch học hôm nay.
+              </div>
+            ) : (
+              <span className="text-muted-foreground text-sm">
+                Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+                Impedit voluptates, quod molestiae repellat cum fuga assumenda
+                consectetur id repellendus. Consequuntur modi iste ad iusto
+                similique deleniti unde ex ab cum!
+              </span>
+            )}
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <div>
-              {format(new Date(), "dd/MM/yyyy")}
-            </div>
-            <Badge>Đã điểm danh</Badge>
-          </CardFooter>
+          {notifications.length > 0 && (
+            <CardFooter className="flex justify-between">
+              <div>{format(new Date(), "dd/MM/yyyy")}</div>
+              <Badge>Đã điểm danh</Badge>
+            </CardFooter>
+          )}
         </Card>
       </div>
 
@@ -113,18 +140,21 @@ const DashboardPage = () => {
               key={classItem.id}
               className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
             >
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/classes/${classItem.id}`)}>
+              <Card
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/classes/${classItem.id}`)}
+              >
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{classItem.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
+                    <Hash className="w-4 h-4" />
                     <span className="text-xs">{classItem.code}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
-                    <span className="text-xs">{classItem.lecturerId}</span>
+                    <span className="text-xs">{classItem.lecturerName}</span>
                   </div>
                 </CardContent>
               </Card>

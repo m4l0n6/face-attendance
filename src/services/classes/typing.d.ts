@@ -1,11 +1,12 @@
 export interface Classes {
-  id: string
-  name: string
-  code: string
-  description: string
-  lecturerId: string
-  _count: ClassesCount
-  createdAt: string
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  lecturerId: string;
+  _count: ClassesCount;
+  lecturerName: string;
+  createdAt: string;
 }
 
 type ClassesCount = {

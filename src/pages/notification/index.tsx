@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { DataTable } from "@/components/common/DataTable";
 import {
   createIndexColumn,
@@ -7,45 +7,24 @@ import {
 } from "@/components/common/DataTableHelpers";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { getNotifications, markNotificationAsRead } from "@/services/notification/index";
 import { useAuthStore } from "@/stores/auth";
-import { toast } from "sonner";
+import { useNotificationStore } from "@/stores/notification";
 import type { Notification } from "@/services/notification/typing";
 import { Load } from "@/components/load";
 
 const NotificationPage = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
   const token = useAuthStore((state) => state.token);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!token) return;
-    
-    try {
-      setLoading(true);
-      const data = await getNotifications(token, false);
-      setNotifications(data.notifications || []);
-    } catch {
-      toast.error("Không thể tải thông báo");
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+  const { notifications, isLoading, fetchNotifications, markAsRead } = useNotificationStore();
 
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    if (token) {
+      fetchNotifications(token, false);
+    }
+  }, [token, fetchNotifications]);
 
   const handleMarkAsRead = async (notification: Notification) => {
     if (!token || notification.isRead) return;
-    
-    try {
-      await markNotificationAsRead(token, notification.id);
-      await fetchNotifications();
-      toast.success("Đã đánh dấu là đã đọc");
-    } catch  {
-      toast.error("Không thể đánh dấu thông báo");
-    }
+    await markAsRead(token, notification.id);
   };
 
   const columns: ColumnDef<Notification>[] = [
@@ -88,7 +67,7 @@ const NotificationPage = () => {
     }),
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Load />

@@ -8,3 +8,12 @@ export interface Notification {
   readAt: string | null;
   createdAt: string;
 }
+
+type NotificationType =
+  | SCHEDULE_CREATED
+  | SCHEDULE_UPDATED
+  | SCHEDULE_CANCELLED
+  | SESSION_REMINDER
+  | ATTENDANCE_MARKED
+  | ATTENDANCE_REMINDER
+  | GENERAL;
