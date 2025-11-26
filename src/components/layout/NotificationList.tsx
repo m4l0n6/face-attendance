@@ -11,6 +11,7 @@ import { Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/services/notification/index";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "sonner";
@@ -20,19 +21,19 @@ import type { Notification } from "@/services/notification/typing";
 
 const NotificationList = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadOnly] = useState(true);
   const token = useAuthStore((state) => state.token);
+  const navigate = useNavigate();
 
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
     
     try {
-      const data = await getNotifications(token, unreadOnly);
+      const data = await getNotifications(token, false);
       setNotifications(data.notifications || []);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
-  }, [token, unreadOnly]);
+  }, [token]);
 
   useEffect(() => {
     fetchNotifications();
@@ -127,7 +128,7 @@ const NotificationList = () => {
             notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`p-3 cursor-pointer ${
+                className={`p-3 mb-2 cursor-pointer border ${
                   !notification.isRead ? "bg-accent/50" : ""
                 }`}
                 onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
@@ -158,7 +159,7 @@ const NotificationList = () => {
           )}
         </ScrollArea>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="justify-center text-primary text-center cursor-pointer">
+        <DropdownMenuItem className="justify-center text-primary text-center cursor-pointer" onClick={() => navigate("/notifications")}>
           Xem tất cả thông báo
         </DropdownMenuItem>
       </DropdownMenuContent>

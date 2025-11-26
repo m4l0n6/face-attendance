@@ -15,7 +15,7 @@ import {
   CarouselApi,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, User, Hash } from "lucide-react";
+import { ArrowRight, User, Hash, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth";
 import { useEffect, useState } from "react";
@@ -144,7 +144,7 @@ const DashboardPage = () => {
                 className="hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => navigate(`/classes/${classItem.id}`)}
               >
-                <CardHeader className="pb-3">
+                <CardHeader>
                   <CardTitle className="text-lg">{classItem.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
@@ -155,6 +155,18 @@ const DashboardPage = () => {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
                     <span className="text-xs">{classItem.lecturerName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-xs">
+                      {classItem.schedules[0].room}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-xs">
+                      {classItem.schedules[0].startTime} - {classItem.schedules[0].endTime}
+                    </span>
                   </div>
                 </CardContent>
               </Card>

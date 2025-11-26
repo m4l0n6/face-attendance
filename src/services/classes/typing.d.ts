@@ -7,6 +7,15 @@ export interface Classes {
   _count: ClassesCount;
   lecturerName: string;
   createdAt: string;
+  schedules;
+}
+
+interface Schedule {
+  id: string;
+  name: string;
+  room: string;
+  startTime: string;
+  endTime: string;
 }
 
 type ClassesCount = {

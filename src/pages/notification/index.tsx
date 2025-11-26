@@ -3,7 +3,6 @@ import { DataTable } from "@/components/common/DataTable";
 import {
   createIndexColumn,
   createDateColumn,
-  createActionsColumn,
 } from "@/components/common/DataTableHelpers";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
@@ -14,18 +13,13 @@ import { Load } from "@/components/load";
 
 const NotificationPage = () => {
   const token = useAuthStore((state) => state.token);
-  const { notifications, isLoading, fetchNotifications, markAsRead } = useNotificationStore();
+  const { notifications, isLoading, fetchNotifications } = useNotificationStore();
 
   useEffect(() => {
     if (token) {
       fetchNotifications(token, false);
     }
   }, [token, fetchNotifications]);
-
-  const handleMarkAsRead = async (notification: Notification) => {
-    if (!token || notification.isRead) return;
-    await markAsRead(token, notification.id);
-  };
 
   const columns: ColumnDef<Notification>[] = [
     createIndexColumn(),
@@ -55,16 +49,13 @@ const NotificationPage = () => {
       cell: ({ row }) => {
         const isRead = row.original.isRead;
         return (
-          <Badge variant={isRead ? "outline" : "default"}>
+          <Badge variant={isRead ? "default" : "outline"}>
             {isRead ? "Đã đọc" : "Chưa đọc"}
           </Badge>
         );
       },
     },
     createDateColumn("createdAt", "Ngày tạo"),
-    createActionsColumn({
-      onView: handleMarkAsRead,
-    }),
   ];
 
   if (isLoading) {
