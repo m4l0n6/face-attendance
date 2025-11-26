@@ -10,63 +10,69 @@ import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useState, useCallback } from "react";
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/services/api";
+import { useAuthStore } from "@/stores/auth";
+import { toast } from "sonner";
 
 interface Notification {
-  id: number;
+  id: string;
+  userId: string;
   title: string;
   message: string;
-  time: string;
+  type: string;
   isRead: boolean;
-  type: "info" | "warning" | "success";
+  readAt: string | null;
+  createdAt: string;
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: 1,
-    title: "Điểm danh thành công",
-    message: "Bạn đã điểm danh lớp Lập trình Web thành công",
-    time: "5 phút trước",
-    isRead: false,
-    type: "success",
-  },
-  {
-    id: 2,
-    title: "Thông báo từ giảng viên",
-    message: "Lớp Cơ sở dữ liệu chuyển sang phòng B203",
-    time: "1 giờ trước",
-    isRead: false,
-    type: "warning",
-  },
-  {
-    id: 3,
-    title: "Lịch học mới",
-    message: "Lịch học tuần sau đã được cập nhật",
-    time: "2 giờ trước",
-    isRead: true,
-    type: "info",
-  },
-  {
-    id: 4,
-    title: "Nhắc nhở điểm danh",
-    message: "Bạn chưa điểm danh lớp Mạng máy tính hôm nay",
-    time: "3 giờ trước",
-    isRead: true,
-    type: "warning",
-  },
-  {
-    id: 5,
-    title: "Bài tập mới",
-    message: "Giảng viên đã giao bài tập Lập trình Web",
-    time: "1 ngày trước",
-    isRead: true,
-    type: "info",
-  },
-];
-
 const NotificationList = () => {
-  const unreadCount = mockNotifications.filter((n) => !n.isRead).length;
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadOnly] = useState(true);
+  const token = useAuthStore((state) => state.token);
 
-  const getTypeColor = (type: Notification["type"]) => {
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      const data = await getNotifications(token, unreadOnly);
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  }, [token, unreadOnly]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleMarkAsRead = async (notificationId: string) => {
+    if (!token) return;
+    
+    try {
+      await markNotificationAsRead(token, notificationId);
+      await fetchNotifications();
+      toast.success("Đã đánh dấu là đã đọc");
+    } catch  {
+      toast.error("Không thể đánh dấu thông báo");
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (!token) return;
+    
+    try {
+      await markAllNotificationsAsRead(token);
+      await fetchNotifications();
+      toast.success("Đã đánh dấu tất cả là đã đọc");
+    } catch  {
+      toast.error("Không thể đánh dấu tất cả");
+    }
+  };
+
+  const getTypeColor = (type: string) => {
     switch (type) {
       case "success":
         return "border-green-500";
@@ -76,6 +82,20 @@ const NotificationList = () => {
         return "border-blue-500";
       default:
         return "border-gray-500";
+    }
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / 60000);
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} phút trước`;
+    } else if (diffInMinutes < 1440) {
+      return `${Math.floor(diffInMinutes / 60)} giờ trước`;
+    } else {
+      return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
     }
   };
 
@@ -95,40 +115,55 @@ const NotificationList = () => {
         <DropdownMenuLabel className="flex justify-between items-center">
           <span>Thông báo</span>
           {unreadCount > 0 && (
-            <Badge variant="destructive" className="text-xs">
-              {unreadCount} mới
-            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 text-primary text-xs"
+              onClick={handleMarkAllAsRead}
+            >
+              Đánh dấu tất cả
+            </Button>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ScrollArea className="h-[400px]">
-          {mockNotifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className={`flex-col items-start gap-1 p-3 cursor-pointer ${
-                !notification.isRead ? "bg-muted/50" : ""
-              }`}
-            >
-              <div className="flex justify-between items-start gap-2 w-full">
-                <div className={`border-l-2 ${getTypeColor(notification.type)} pl-2 flex-1`}>
-                  <div className="flex justify-between items-start gap-2">
-                    <h4 className="font-semibold text-sm line-clamp-1">
-                      {notification.title}
-                    </h4>
-                    {!notification.isRead && (
-                      <span className="bg-blue-500 mt-1 rounded-full w-2 h-2 shrink-0" />
-                    )}
+          {notifications.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground text-sm">
+              Không có thông báo
+            </div>
+          ) : (
+            notifications.map((notification) => (
+              <DropdownMenuItem
+                key={notification.id}
+                className={`p-3 cursor-pointer ${
+                  !notification.isRead ? "bg-accent/50" : ""
+                }`}
+                onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
+              >
+                <div className="flex gap-3 w-full">
+                  <div
+                    className={`w-1 shrink-0 rounded-full ${getTypeColor(
+                      notification.type
+                    )}`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-medium text-sm">{notification.title}</h4>
+                      {!notification.isRead && (
+                        <Badge className="bg-blue-500 shrink-0 text-[10px]">Mới</Badge>
+                      )}
+                    </div>
+                    <p className="mt-1 text-muted-foreground text-xs line-clamp-2">
+                      {notification.message}
+                    </p>
+                    <span className="mt-1 text-[10px] text-muted-foreground">
+                      {formatTime(notification.createdAt)}
+                    </span>
                   </div>
-                  <p className="mt-1 text-muted-foreground text-xs line-clamp-2">
-                    {notification.message}
-                  </p>
-                  <span className="mt-1 text-[10px] text-muted-foreground">
-                    {notification.time}
-                  </span>
                 </div>
-              </div>
-            </DropdownMenuItem>
-          ))}
+              </DropdownMenuItem>
+            ))
+          )}
         </ScrollArea>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="justify-center text-primary text-center cursor-pointer">
