@@ -16,7 +16,7 @@ import {
   getFaceCount,
 } from "@/utils/faceStorage";
 import { useAuthStore } from "@/stores/auth";
-import { faceUpload } from "@/services/api";
+import { faceUpload } from "@/services/face-record/index";
 
 const FaceRecordPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);

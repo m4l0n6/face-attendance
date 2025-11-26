@@ -11,20 +11,12 @@ import { Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState, useCallback } from "react";
-import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/services/api";
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from "@/services/notification/index";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "sonner";
+import EmptyData from "../empty";
+import type { Notification } from "@/services/notification/typing";
 
-interface Notification {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: string;
-  isRead: boolean;
-  readAt: string | null;
-  createdAt: string;
-}
 
 const NotificationList = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -118,7 +110,7 @@ const NotificationList = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-auto p-0 text-primary text-xs"
+              className="p-0 h-auto text-primary text-xs"
               onClick={handleMarkAllAsRead}
             >
               Đánh dấu tất cả
@@ -128,8 +120,8 @@ const NotificationList = () => {
         <DropdownMenuSeparator />
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              Không có thông báo
+            <div className="p-4">
+              <EmptyData title="Không có thông báo" />
             </div>
           ) : (
             notifications.map((notification) => (
@@ -150,7 +142,7 @@ const NotificationList = () => {
                     <div className="flex justify-between items-start gap-2">
                       <h4 className="font-medium text-sm">{notification.title}</h4>
                       {!notification.isRead && (
-                        <Badge className="bg-blue-500 shrink-0 text-[10px]">Mới</Badge>
+                        <Badge className="bg-blue-500 text-[10px] shrink-0">Mới</Badge>
                       )}
                     </div>
                     <p className="mt-1 text-muted-foreground text-xs line-clamp-2">

@@ -7,20 +7,11 @@ import {
 } from "@/components/common/DataTableHelpers";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { getNotifications, markNotificationAsRead } from "@/services/api";
+import { getNotifications, markNotificationAsRead } from "@/services/notification/index";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "sonner";
-
-interface Notification {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: string;
-  isRead: boolean;
-  readAt: string | null;
-  createdAt: string;
-}
+import type { Notification } from "@/services/notification/typing";
+import { Load } from "@/components/load";
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -32,7 +23,7 @@ const NotificationPage = () => {
     
     try {
       setLoading(true);
-      const data = await getNotifications(token, false); // Get all notifications
+      const data = await getNotifications(token, false);
       setNotifications(data.notifications || []);
     } catch {
       toast.error("Không thể tải thông báo");
@@ -98,7 +89,11 @@ const NotificationPage = () => {
   ];
 
   if (loading) {
-    return <div>Đang tải...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Load />
+      </div>
+    );
   }
 
   return (

@@ -8,14 +8,18 @@ import {
 
 import { HardDrive } from "lucide-react";
 
-const EmptyData = () => {
+interface EmptyDataProps {
+  title?: string;
+}
+
+const EmptyData = ({ title = "Không có dữ liệu" }: EmptyDataProps) => {
     return (
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <HardDrive size={24} />
               </EmptyMedia>
-              <EmptyTitle>Không có dữ liệu</EmptyTitle>
+              <EmptyTitle>{title}</EmptyTitle>
             </EmptyHeader>
           </Empty>
     );
