@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,62 +14,39 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { Calendar1Icon, Clock } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
+import { useScheduleStore } from "@/stores/schedules";
+import { Load } from "@/components/load";
 
-const sampleEvents = [
-  {
-    id: 1,
-    title: "Họp team",
-    start: new Date(2025, 10, 25, 10, 0),
-    end: new Date(2025, 10, 25, 11, 0),
-  },
-  {
-    id: 2,
-    title: "Review code",
-    start: new Date(2025, 10, 26, 14, 0),
-    end: new Date(2025, 10, 26, 15, 30),
-  },
-  {
-    id: 3,
-    title: "Gặp khách hàng",
-    start: new Date(2025, 10, 27, 9, 0),
-    end: new Date(2025, 10, 27, 10, 30),
-  },
-  {
-    id: 4,
-    title: "Workshop",
-    start: new Date(2025, 10, 28, 13, 0),
-    end: new Date(2025, 10, 28, 17, 0),
-  },
-  {
-    id: 5,
-    title: "Sprint Planning",
-    start: new Date(2025, 10, 29, 10, 0),
-    end: new Date(2025, 10, 29, 12, 0),
-  },
-  {
-    id: 6,
-    title: "Đào tạo nội bộ",
-    start: new Date(2025, 10, 30, 15, 0),
-    end: new Date(2025, 10, 30, 17, 0),
-  },
-  {
-    id: 7,
-    title: "Hội thảo chuyên đề",
-    start: new Date(2025, 11, 1, 9, 0),
-    end: new Date(2025, 11, 1, 12, 0),
-  }
-];
 
 const SchedulePage = () => {
-  const [selectedEvent, setSelectedEvent] = useState<typeof sampleEvents[0] | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<typeof calendarEvents[0] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const schedules = useScheduleStore((state) => state.schedules);
+  const isLoading = useScheduleStore((state) => state.isLoading);
+  const fetchSchedules = useScheduleStore((state) => state.fetchSchedules);
+  const token = useAuthStore((state) => state.token);
+
+  useEffect(() => {
+    if (token) {
+      fetchSchedules(token);
+    }
+  }, [token, fetchSchedules]);
+
+  const calendarEvents =
+    schedules?.map((item: { id: string; sessionName: string; startDateTime: string; endDateTime: string }) => ({
+      id: item.id,
+      title: item.sessionName,
+      start: new Date(item.startDateTime),
+      end: new Date(item.endDateTime),
+    })) || [];
 
   // Sắp xếp events theo thời gian
-  const upcomingEvents = [...sampleEvents]
+  const upcomingEvents = [...calendarEvents]
     .filter((event) => event.start >= new Date())
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 
-  const handleEventClick = (event: typeof sampleEvents[0]) => {
+  const handleEventClick = (event: typeof calendarEvents[0]) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
@@ -79,12 +56,20 @@ const SchedulePage = () => {
     setSelectedEvent(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Load />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="gap-6 grid grid-cols-1 lg:grid-cols-3 p-6 h-screen overflow-hidden">
         {/* Calendar Section */}
         <div className="lg:col-span-2 overflow-hidden">
-          <BigCalendar events={sampleEvents} />
+          <BigCalendar events={calendarEvents} />
         </div>
 
         {/* Upcoming Events Section */}
@@ -163,7 +148,7 @@ const SchedulePage = () => {
               </div>
             </div>
           )}
-          <div className="flex justify-end gap-2">
+          <div className="flex gap-2">
             <Button variant="outline" onClick={handleCloseModal}>
               Đóng
             </Button>

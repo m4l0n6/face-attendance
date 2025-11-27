@@ -40,7 +40,6 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchClasses();
-    console.log(classes);
   }, [fetchClasses]);
 
   // Carousel 
@@ -102,17 +101,20 @@ const DashboardPage = () => {
               </div>
             ) : (
               <span className="text-muted-foreground text-sm">
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                Impedit voluptates, quod molestiae repellat cum fuga assumenda
-                consectetur id repellendus. Consequuntur modi iste ad iusto
-                similique deleniti unde ex ab cum!
+                {notifications[0].message}
               </span>
             )}
           </CardContent>
           {notifications.length > 0 && (
             <CardFooter className="flex justify-between">
-              <div>{format(new Date(), "dd/MM/yyyy")}</div>
-              <Badge>Đã điểm danh</Badge>
+              <div>
+                {format(new Date(notifications[0].createdAt), "dd/MM/yyyy")}
+              </div>
+              {notifications[0].isRead ? (
+                <Badge variant="secondary"  >Đã đọc</Badge>
+              ) : (
+                <Badge>Chưa đọc</Badge>
+              )}
             </CardFooter>
           )}
         </Card>
@@ -165,7 +167,8 @@ const DashboardPage = () => {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="w-4 h-4" />
                     <span className="text-xs">
-                      {classItem.schedules[0].startTime} - {classItem.schedules[0].endTime}
+                      {classItem.schedules[0].startTime} -{" "}
+                      {classItem.schedules[0].endTime}
                     </span>
                   </div>
                 </CardContent>

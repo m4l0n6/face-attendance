@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState, useCallback } from "react";
@@ -110,11 +110,11 @@ const NotificationList = () => {
           {unreadCount > 0 && (
             <Button
               variant="ghost"
-              size="sm"
+              size='icon'
               className="p-0 h-auto text-primary text-xs"
               onClick={handleMarkAllAsRead}
             >
-              Đánh dấu tất cả
+              <CheckCheck className="w-4 h-4" />
             </Button>
           )}
         </DropdownMenuLabel>

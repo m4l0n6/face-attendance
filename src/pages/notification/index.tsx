@@ -21,6 +21,27 @@ const NotificationPage = () => {
     }
   }, [token, fetchNotifications]);
 
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case "SCHEDULE_CREATED":
+        return "Lịch trình được tạo";
+      case "SCHEDULE_UPDATED":
+        return "Lịch trình được cập nhật";
+      case "SCHEDULE_CANCELLED":
+        return "Lịch trình bị hủy";
+      case "SESSION_REMINDER":
+        return "Nhắc nhở buổi học";
+      case "ATTENDANCE_MARKED":
+        return "Điểm danh đã được ghi nhận";
+      case "ATTENDANCE_REMINDER":
+        return "Nhắc nhở điểm danh";
+      case "GENERAL":
+        return "Chung";
+      default:
+        return type;
+    }
+  };
+
   const columns: ColumnDef<Notification>[] = [
     createIndexColumn(),
     {
@@ -40,7 +61,7 @@ const NotificationPage = () => {
           type === "success" ? "default" :
           type === "warning" ? "destructive" :
           "secondary";
-        return <Badge variant={variant}>{type}</Badge>;
+        return <Badge variant={variant}>{getTypeText(type)}</Badge>;
       },
     },
     {
