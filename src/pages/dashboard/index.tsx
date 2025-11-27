@@ -158,19 +158,23 @@ const DashboardPage = () => {
                     <User className="w-4 h-4" />
                     <span className="text-xs">{classItem.lecturerName}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-xs">
-                      {classItem.schedules[0].room}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-xs">
-                      {classItem.schedules[0].startTime} -{" "}
-                      {classItem.schedules[0].endTime}
-                    </span>
-                  </div>
+                  {classItem.schedules && classItem.schedules.length > 0 && (
+                    <>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-xs">
+                          {classItem.schedules[0].room || "Chưa có phòng"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-xs">
+                          {classItem.schedules[0].startTime} -{" "}
+                          {classItem.schedules[0].endTime}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </CarouselItem>
