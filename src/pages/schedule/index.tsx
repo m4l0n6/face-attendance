@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
-import { Calendar1Icon, Clock } from "lucide-react";
+import { Calendar1Icon} from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
 import { useScheduleStore } from "@/stores/schedules";
 import { Load } from "@/components/load";
@@ -34,11 +34,19 @@ const SchedulePage = () => {
   }, [token, fetchSchedules]);
 
   const calendarEvents =
-    schedules?.map((item: { id: string; sessionName: string; startDateTime: string; endDateTime: string }) => ({
+    schedules?.map((item) => ({
       id: item.id,
       title: item.sessionName,
       start: new Date(item.startDateTime),
       end: new Date(item.endDateTime),
+      info: [
+        { label: "Ghi chú", value: item.note || "" },
+        { label: "Lớp", value: item.class?.name || "" },
+        { label: "Mã lớp", value: item.class?.code || "" },
+        { label: "Giảng viên", value: item.lecturerName || "" },
+        { label: "Tên lịch học", value: item.schedule?.name || "" },
+        { label: "Phòng học", value: item.schedule?.room || "" },
+      ],
     })) || [];
 
   // Sắp xếp events theo thời gian
@@ -132,20 +140,29 @@ const SchedulePage = () => {
           {selectedEvent && (
             <div className="space-y-4 py-4">
               <div className="flex items-start gap-3">
-                <Clock className="mt-1 w-5 h-5 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="mb-1 font-medium text-sm">Thời gian</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm">
                     {format(selectedEvent.start, "EEEE, dd/MM/yyyy", {
                       locale: vi,
                     })}
                   </p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm">
                     {format(selectedEvent.start, "HH:mm", { locale: vi })} -{" "}
                     {format(selectedEvent.end, "HH:mm", { locale: vi })}
                   </p>
                 </div>
               </div>
+              {selectedEvent.info && selectedEvent.info.length > 0 && (
+                <div className="gap-2 grid grid-cols-1 md:grid-cols-2 mt-4">
+                  {selectedEvent.info.map((item, idx) => (
+                    <div key={idx} className="text-sm">
+                      <span className="font-semibold">{item.label}:</span>{" "}
+                      {item.value}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <div className="flex gap-2">

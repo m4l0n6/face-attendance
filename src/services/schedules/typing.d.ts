@@ -7,7 +7,7 @@ export interface Schedule {
     note: string;
     class: Class;
     lecturerName: string;
-    schedule: Schedule;
+    schedule: ScheduleDetail;
     attendanceSession: AttendanceSession
     createdAt: string;
     updatedAt: string;
@@ -19,7 +19,7 @@ export interface Class {
     code: string;
 }
 
-export interface Schedule {
+export interface ScheduleDetail {
     id: string;
     name: string;
     room: string;

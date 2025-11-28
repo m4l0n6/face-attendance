@@ -111,10 +111,10 @@ const NotificationList = () => {
             <Button
               variant="ghost"
               size='icon'
-              className="p-0 h-auto text-primary text-xs"
+              className="w-6 h-6 text-primary text-xs"
               onClick={handleMarkAllAsRead}
             >
-              <CheckCheck className="w-4 h-4" />
+              <CheckCheck  />
             </Button>
           )}
         </DropdownMenuLabel>

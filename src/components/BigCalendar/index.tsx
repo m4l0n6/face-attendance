@@ -5,7 +5,7 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import { vi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock  } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -103,13 +103,15 @@ interface CustomEventProps {
     title: string;
     start: Date;
     end: Date;
+    info?: Array<{ label: string; value: string }>; // Thông tin phụ: trạng thái, lớp học, ...
   };
 }
 
 const CustomEvent = ({ event }: CustomEventProps) => {
   return (
     <div className="px-1 py-0.5 font-medium text-xs truncate">
-      {event.title}
+      <div>{event.title}</div>
+      
     </div>
   );
 };
@@ -119,6 +121,7 @@ interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
+  info?: Array<{ label: string; value: string }>; // Thông tin phụ: trạng thái, lớp học, ...
 }
 
 interface BigCalendarComponentProps {
@@ -208,20 +211,29 @@ const BigCalendarComponent = ({ events = [] }: BigCalendarComponentProps) => {
           {selectedEvent && (
             <div className="space-y-4 py-4">
               <div className="flex items-start gap-3">
-                <Clock className="mt-1 w-5 h-5 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="mb-1 font-medium text-sm">Thời gian</p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm">
                     {format(selectedEvent.start, "EEEE, dd/MM/yyyy", {
                       locale: vi,
                     })}
                   </p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm">
                     {format(selectedEvent.start, "HH:mm", { locale: vi })} -{" "}
                     {format(selectedEvent.end, "HH:mm", { locale: vi })}
                   </p>
                 </div>
               </div>
+              {selectedEvent.info && selectedEvent.info.length > 0 && (
+                <div className="gap-2 grid grid-cols-1 md:grid-cols-2 mt-4">
+                  {selectedEvent.info.map((item, idx) => (
+                    <div key={idx} className="text-sm">
+                      <span className="font-semibold">{item.label}:</span>{" "}
+                      {item.value}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <div className="flex justify-end gap-2">
