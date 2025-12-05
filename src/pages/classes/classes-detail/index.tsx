@@ -2,17 +2,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useClassStore } from "@/stores/classes";
 import { useAuthStore } from "@/stores/auth";
+import { useStudentStore } from "@/stores/students";
 import type { Classes, SessionAttendance } from "@/services/classes/typing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/common/DataTable";
-import { createSimpleColumn, createIndexColumn } from "@/components/common/DataTableHelpers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createSimpleColumn, createIndexColumn, createSortableColumn } from "@/components/common/DataTableHelpers";
 import { ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Load } from "@/components/load";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Student } from "@/services/students/typing";
 
 
 const ClassesDetailPage = () => {
@@ -20,26 +23,31 @@ const ClassesDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { classes, fetchClasses, statistic, getStatisticStudentsInClass } = useClassStore();
+  const { studentsByClassId, fetchStudentsByClassId } = useStudentStore();
   const [currentClass, setCurrentClass] = useState<Classes | null>(null);
 
   useEffect(() => {
     if (classes.length === 0) {
       fetchClasses();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (user?.studentInfo[0]?.studentId && classId) {
       getStatisticStudentsInClass(user.studentInfo[0].studentId, classId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const classData = classes.find((c) => c.id === classId);
     setCurrentClass(classData || null);
   }, [classId, classes]);
+
+  useEffect(() => {
+    if (classId) {
+      fetchStudentsByClassId(classId);
+    }
+  }, [classId, fetchStudentsByClassId]);
 
   const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
     SCHEDULED: { label: "Đã lên lịch", variant: "secondary" },
@@ -94,6 +102,13 @@ const ClassesDetailPage = () => {
     }),
   ];
 
+  const studentColumns: ColumnDef<Student>[] = [
+    createIndexColumn(),
+    createSortableColumn("studentId", "Mã sinh viên"),
+    createSortableColumn("name", "Tên sinh viên"),
+    createSortableColumn("email", "Email"),
+  ]
+
   if (!currentClass) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -145,54 +160,96 @@ const ClassesDetailPage = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Thống kê điểm danh</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="text-muted-foreground text-sm">Tổng số buổi học</p>
-              <p className="font-semibold text-2xl">{statistic?.statistics.totalSessions || 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-sm">Đã tham gia</p>
-              <p className="font-semibold text-green-600 text-2xl">{statistic?.statistics.attendedSessions || 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-sm">Vắng mặt</p>
-              <p className="font-semibold text-red-600 text-2xl">{statistic?.statistics.absentSessions || 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-sm">Tỷ lệ tham gia</p>
-              <p className="font-semibold text-blue-600 text-2xl">{statistic?.statistics.attendanceRate || "0%"}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="class" >
+        <TabsList>
+          <TabsTrigger value="class">Sinh viên</TabsTrigger>
+          <TabsTrigger value="attendance">Điểm danh</TabsTrigger>
+        </TabsList>
+        <TabsContent value="class">
+          <Card>
+            <CardHeader>
+              <CardTitle>Danh sách sinh viên</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {studentsByClassId && studentsByClassId.length > 0 ? (
+                <DataTable
+                  columns={studentColumns}
+                  data={studentsByClassId}
+                  searchKey="name"
+                  searchPlaceholder="Tìm kiếm sinh viên..."
+                  showCreateButton={false}
+                  showRefreshButton={false}
+                  pageSize={10}
+                />
+              ) : (
+                <div className="py-12 text-muted-foreground text-center">
+                  Chưa có sinh viên nào
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="attendance" className="space-y-4 h-full">
+          <Card>
+            <CardHeader>
+              <CardTitle>Thống kê điểm danh</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="gap-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <p className="text-muted-foreground text-sm">Tổng số buổi học</p>
+                  <p className="font-semibold text-2xl">
+                    {statistic?.statistics.totalSessions || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Đã tham gia</p>
+                  <p className="font-semibold text-green-600 text-2xl">
+                    {statistic?.statistics.attendedSessions || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Vắng mặt</p>
+                  <p className="font-semibold text-red-600 text-2xl">
+                    {statistic?.statistics.absentSessions || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Tỷ lệ tham gia</p>
+                  <p className="font-semibold text-blue-600 text-2xl">
+                    {statistic?.statistics.attendanceRate || "0%"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách buổi học ({statistic?.sessions.length || 0})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {statistic?.sessions && statistic.sessions.length > 0 ? (
-            <DataTable
-              columns={columns}
-              data={statistic.sessions}
-              searchKey="sessionName"
-              searchPlaceholder="Tìm kiếm buổi học..."
-              showCreateButton={false}
-              showRefreshButton={false}
-              pageSize={10}
-            />
-          ) : (
-            <div className="py-12 text-muted-foreground text-center">
-              Chưa có buổi học nào
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Danh sách buổi học ({statistic?.sessions.length || 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {statistic?.sessions && statistic.sessions.length > 0 ? (
+                <DataTable
+                  columns={columns}
+                  data={statistic.sessions}
+                  searchKey="sessionName"
+                  searchPlaceholder="Tìm kiếm buổi học..."
+                  showCreateButton={false}
+                  showRefreshButton={false}
+                  pageSize={10}
+                />
+              ) : (
+                <div className="py-12 text-muted-foreground text-center">
+                  Chưa có buổi học nào
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          </TabsContent>
+      </Tabs>
     </div>
   );
 };
