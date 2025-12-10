@@ -5,11 +5,18 @@ export interface Student {
   email: string;
   classId: string;
   class: Class;
-  faceImage?: FaceImage | null;
+  faceImage?: FaceImage  | null;
   faceDescriptorsCount?: number;
   hasFaceDescriptor?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface FaceImage {
+  id: string;
+  imageUrl: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface GetStudentsResponse {

@@ -9,10 +9,11 @@ import {
   detectFace,
   drawDetections,
   captureFaceDescriptor,
+  compareFaces,
 } from "@/utils/faceDetection";
 import { useAuthStore } from "@/stores/auth";
-import { faceUpload } from "@/services/face-record/index";
-import { recordAttendance } from "@/services/attendance/index";
+import { useStudentStore } from "@/stores/students";
+import * as faceapi from "face-api.js";
 import { mySchedules } from "@/services/schedules/index";
 import type { Schedule } from "@/services/schedules/typing";
 import {
@@ -25,6 +26,8 @@ import {
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Calendar, Clock, MapPin } from "lucide-react";
+import { useIPConfigStore } from "@/stores/ip-config";
+import { recordAttendance } from "@/services/attendance/index";
 
 const FaceRecordPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -34,16 +37,30 @@ const FaceRecordPage: React.FC = () => {
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [capturedDescriptor, setCapturedDescriptor] = useState<Float32Array | null>(null);
   const [currentEmbeddings, setCurrentEmbeddings] = useState<Float32Array[]>([]);
-  const [mode, setMode] = useState<"register" | "attendance">("register");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State cho điểm danh
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>("");
   const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
-  
+
+  const { fetchStudentInfoById, studentInfo } = useStudentStore();
+  const { currentIP, fetchCurrentIP } = useIPConfigStore();
+
   const { user } = useAuthStore();
   const token = useAuthStore((state) => state.token);
+
+  useEffect(() => {
+    if (user?.studentInfo) {
+      fetchStudentInfoById(user.studentInfo[0].id);
+    }
+  }, [user, fetchStudentInfoById]);
+
+  useEffect(() => {
+    fetchCurrentIP();
+  }, [fetchCurrentIP]);
+
+  const studentImage = studentInfo?.faceImage?.imageUrl || null;
 
   // Load face models
   useEffect(() => {
@@ -59,10 +76,10 @@ const FaceRecordPage: React.FC = () => {
     initModels();
   }, []);
 
-  // Load schedules khi chuyển sang chế độ điểm danh
+  // Load schedules
   useEffect(() => {
     const fetchSchedules = async () => {
-      if (mode === "attendance" && token) {
+      if (token) {
         setIsLoadingSchedules(true);
         try {
           const data = await mySchedules(token);
@@ -81,7 +98,7 @@ const FaceRecordPage: React.FC = () => {
       }
     };
     fetchSchedules();
-  }, [mode, token]);
+  }, [token]);
 
   const handleVideoReady = useCallback((video: HTMLVideoElement) => {
     videoRef.current = video;
@@ -99,12 +116,6 @@ const FaceRecordPage: React.FC = () => {
     setIsDetecting(false);
   };
 
-  const switchMode = (newMode: "register" | "attendance") => {
-    setMode(newMode);
-    setCapturedDescriptor(null);
-    setSelectedSessionId("");
-  };
-
   const captureFace = async () => {
     if (!videoRef.current) return;
 
@@ -120,6 +131,11 @@ const FaceRecordPage: React.FC = () => {
       const studentInfo = user?.studentInfo;
       const studentId = studentInfo && studentInfo.length > 0 ? studentInfo[0].studentId : null;
       
+      if (!currentIP?.isAllowed) {
+        toast.error("Địa chỉ IP hiện tại không được phép điểm danh!");
+        return;
+      }
+      
       if (!studentId) {
         toast.error("Không tìm thấy thông tin sinh viên!");
         return;
@@ -130,52 +146,83 @@ const FaceRecordPage: React.FC = () => {
         return;
       }
 
-      if (mode === "register") {
-        // Chế độ đăng ký: Gọi API để lưu khuôn mặt
-        try {
-          await faceUpload(token, studentId, Array.from(descriptor));
-          setCapturedDescriptor(descriptor);
-          toast.success("Đăng ký khuôn mặt thành công!");
-        } catch (error: unknown) {
-          console.error("Face upload error:", error);
-          if (error && typeof error === 'object' && 'response' in error) {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const errorMessage = axiosError.response?.data?.message || "Không thể lưu khuôn mặt!";
-            toast.error(errorMessage);
-          } else {
-            toast.error("Không thể lưu khuôn mặt!");
-          }
-        }
-      } else {
-        // Chế độ điểm danh: Gọi API để ghi nhận điểm danh
-        if (!selectedSessionId) {
-          toast.error("Vui lòng chọn buổi học cần điểm danh!");
+      if (!selectedSessionId) {
+        toast.error("Vui lòng chọn buổi học cần điểm danh!");
+        return;
+      }
+
+      // Kiểm tra xem sinh viên đã có ảnh khuôn mặt đăng ký chưa
+      if (!studentImage) {
+        toast.error("Bạn chưa đăng ký khuôn mặt. Vui lòng liên hệ giáo viên!");
+        return;
+      }
+
+      // So sánh khuôn mặt với ảnh đã đăng ký
+      try {
+        console.log("Loading student image:", studentImage);
+        
+        const img = document.createElement('img');
+        img.crossOrigin = 'anonymous';
+        img.src = studentImage;
+        
+        await new Promise((resolve, reject) => {
+          img.onload = () => {
+            console.log("Image loaded successfully:", img.width, "x", img.height);
+            resolve(null);
+          };
+          img.onerror = (error) => {
+            console.error("Image load error:", error);
+            reject(error);
+          };
+        });
+
+        console.log("Detecting face in registered image...");
+        const registeredDetection = await faceapi
+          .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({
+            inputSize: 224,
+            scoreThreshold: 0.3
+          }))
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        console.log("Registered detection:", registeredDetection);
+
+        if (!registeredDetection) {
+          toast.error("Không thể phát hiện khuôn mặt trong ảnh đã đăng ký! Vui lòng kiểm tra lại ảnh.");
           return;
         }
 
-        try {
-          const studentName = user?.displayName || 
-                              (studentInfo && studentInfo.length > 0 ? studentInfo[0].name : "Sinh viên");
-          
-          await recordAttendance(token, {
-            sessionId: selectedSessionId,
-            studentId: studentId,
-            method: "face",
-            matchedAt: new Date().toISOString(),
-          });
-          
-          setCapturedDescriptor(descriptor);
-          toast.success(`Điểm danh thành công: ${studentName}`);
-        } catch (error: unknown) {
-          console.error("Attendance error:", error);
-          // Lấy message lỗi từ response của server
-          if (error && typeof error === 'object' && 'response' in error) {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            const errorMessage = axiosError.response?.data?.message || "Điểm danh thất bại! Vui lòng thử lại.";
-            toast.error(errorMessage);
-          } else {
-            toast.error("Điểm danh thất bại! Vui lòng thử lại.");
-          }
+        const registeredDescriptor = registeredDetection.descriptor;
+        
+        // So sánh hai khuôn mặt với ngưỡng 0.6
+        const isMatch = compareFaces(descriptor, registeredDescriptor, 0.6);
+        
+        if (!isMatch) {
+          toast.error("Khuôn mặt không khớp với ảnh đã đăng ký!");
+          return;
+        }
+
+        // Nếu khớp, gọi API điểm danh
+        const studentName = user?.displayName || 
+                            (studentInfo && studentInfo.length > 0 ? studentInfo[0].name : "Sinh viên");
+        
+        await recordAttendance(token, {
+          sessionId: selectedSessionId,
+          studentId: studentId,
+          method: "face",
+          matchedAt: new Date().toISOString(),
+        });
+        
+        setCapturedDescriptor(descriptor);
+        toast.success(`Khuôn mặt khớp thành công: ${studentName}`);
+      } catch (error: unknown) {
+        console.error("Attendance error:", error);
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { data?: { message?: string } } };
+          const errorMessage = axiosError.response?.data?.message || "Điểm danh thất bại! Vui lòng thử lại.";
+          toast.error(errorMessage);
+        } else {
+          toast.error("Điểm danh thất bại! Vui lòng thử lại.");
         }
       }
     } catch (err) {
@@ -217,33 +264,11 @@ const FaceRecordPage: React.FC = () => {
   return (
     <div className="mx-auto p-4 sm:p-6 max-w-4xl container">
       <h1 className="mb-4 sm:mb-6 font-bold text-2xl sm:text-3xl text-center">
-        {mode === "register" ? "Đăng ký khuôn mặt" : "Điểm danh khuôn mặt"}
+        Điểm danh khuôn mặt
       </h1>
 
-      {/* Mode Switcher */}
-      <Card className="mb-4 sm:mb-6 p-3 sm:p-4">
-        <div className="flex sm:flex-row flex-col justify-center gap-2 sm:gap-3">
-          <Button
-            onClick={() => switchMode("register")}
-            variant={mode === "register" ? "default" : "outline"}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            Đăng ký khuôn mặt
-          </Button>
-          <Button
-            onClick={() => switchMode("attendance")}
-            variant={mode === "attendance" ? "default" : "outline"}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            Điểm danh
-          </Button>
-        </div>
-      </Card>
-
-      {/* Session Selector - Chỉ hiển thị khi ở chế độ điểm danh */}
-      {mode === "attendance" && (
+      {/* Session Selector */}
+      {
         <Card className="mb-4 sm:mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Chọn buổi học cần điểm danh</CardTitle>
@@ -277,7 +302,7 @@ const FaceRecordPage: React.FC = () => {
 
             {/* Hiển thị thông tin buổi học đã chọn */}
             {selectedSchedule && (
-              <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+              <div className="space-y-2 bg-muted/50 p-4 rounded-lg">
                 <h4 className="font-semibold">{selectedSchedule.sessionName}</h4>
                 <div className="flex items-center gap-2 text-muted-foreground text-sm">
                   <Calendar className="w-4 h-4" />
@@ -306,7 +331,7 @@ const FaceRecordPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Camera View */}
       <Card className="mb-4 sm:mb-6 p-3 sm:p-6">
@@ -364,18 +389,18 @@ const FaceRecordPage: React.FC = () => {
                 onClick={captureFace}
                 variant="default"
                 size="lg"
-                disabled={faceCount === 0 || isSubmitting || (mode === "attendance" && !selectedSessionId)}
+                disabled={!studentImage || isSubmitting || !selectedSessionId}
                 className="w-full sm:w-auto"
               >
-                {isSubmitting ? "Đang xử lý..." : (mode === "register" ? "Lưu khuôn mặt" : "Điểm danh")}
+                {isSubmitting ? "Đang xử lý..." : "Điểm danh"}
               </Button>
             </>
           )}
         </div>
-      </Card>
+      </Card> 
 
       {/* Face Embeddings Info */}
-      {currentEmbeddings.length > 0 && (
+      {/* {currentEmbeddings.length > 0 && (
         <Card className="mb-4 sm:mb-6 p-3 sm:p-4">
           <h3 className="mb-2 font-semibold text-sm sm:text-base">Face Embeddings:</h3>
           <div className="space-y-2">
@@ -392,7 +417,7 @@ const FaceRecordPage: React.FC = () => {
             ))}
           </div>
         </Card>
-      )}
+      )} */}
     </div>
   );
 };

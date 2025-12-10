@@ -33,6 +33,8 @@ const SchedulePage = () => {
     }
   }, [token, fetchSchedules]);
 
+  console.log("Schedules:", schedules);
+
   const calendarEvents =
     schedules?.map((item) => ({
       id: item.id,
